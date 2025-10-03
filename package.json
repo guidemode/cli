@@ -11,8 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/guideai-dev/guideai.git",
-    "directory": "packages/cli"
+    "url": "https://github.com/guideai-dev/cli.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
