@@ -1,6 +1,6 @@
 {
   "name": "@guideai-dev/cli",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "description": "Command line interface for GuideAI",
   "type": "module",
   "main": "./dist/cjs/index.js",
