@@ -31,7 +31,8 @@
     "build:cjs-package": "echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "dev": "tsc --watch",
     "clean": "rm -rf dist *.tsbuildinfo",
-    "test": "vitest run"
+    "lint": "biome lint src",
+    "lint:fix": "biome lint --write src"
   },
   "dependencies": {
     "@guideai-dev/types": "workspace:*",
@@ -41,8 +42,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.6",
-    "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "typescript": "^5.7.2"
   },
   "keywords": ["ai", "guide", "cli"]
 }
