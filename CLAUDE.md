@@ -58,6 +58,63 @@ pnpm cli
 node packages/cli/dist/esm/cli.js
 ```
 
+## Development Workflow
+
+**IMPORTANT: Always run quality checks locally before committing changes.**
+
+### Pre-Commit Checklist
+
+Run these commands in the **CLI package directory** (`packages/cli/`) before committing:
+
+```bash
+# 1. Linting (REQUIRED - zero errors)
+pnpm lint
+
+# 2. Building (REQUIRED - must succeed)
+# Builds both ESM and CJS distributions
+pnpm build
+
+# Note: No typecheck script exists yet (TypeScript checks run during build)
+# Note: No tests exist yet - add tests when adding new features
+```
+
+### Quick Quality Check
+
+Run all checks in sequence:
+
+```bash
+# From packages/cli/
+pnpm lint && pnpm build
+```
+
+**If any check fails, your code MUST NOT be committed. Fix all errors before proceeding.**
+
+### Code Quality Standards
+
+- **Zero tolerance**: No lint errors or build failures allowed in commits
+- **Type safety**: Proper TypeScript types throughout (no `any` without justification)
+- **Dual builds**: Both ESM and CJS must build successfully
+- **Consistent style**: Biome enforces consistent code formatting
+
+### Testing Guidelines
+
+**Note**: Currently no tests exist for the CLI package.
+
+When adding tests in the future:
+- **Test new features**: Add tests for all new functionality
+- **Keep it pragmatic**: Focus on core CLI commands and auth flow
+- **Use existing patterns**: Follow test patterns from other packages
+- **Run locally first**: Always run tests before pushing
+
+### From Workspace Root
+
+To check the CLI package from the workspace root:
+
+```bash
+pnpm --filter @guideai-dev/cli lint
+pnpm --filter @guideai-dev/cli build
+```
+
 ## CLI Commands
 
 ### Authentication
