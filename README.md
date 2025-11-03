@@ -1,15 +1,13 @@
 # @guideai-dev/cli
 
-Command-line interface for GuideAI - monitor and analyze your AI coding agent sessions.
+> **Command-line interface for GuideAI.**
+
+A simple CLI for authenticating with GuideAI and managing sessions from your terminal.
 
 ## Installation
 
 ```bash
 npm install -g @guideai-dev/cli
-# or
-pnpm add -g @guideai-dev/cli
-# or
-yarn global add @guideai-dev/cli
 ```
 
 ## Usage
@@ -17,125 +15,71 @@ yarn global add @guideai-dev/cli
 ### Authentication
 
 ```bash
-# Login to GuideAI server
+# Login to GuideAI
 guideai login
 
-# Login to custom server
-guideai login --server https://your-server.com
-
-# Check authentication status
+# Check who you're logged in as
 guideai whoami
 
 # Logout
 guideai logout
 ```
 
-### Session Management
+That's it! The CLI shares authentication with the desktop app, so you only need to login once.
 
-```bash
-# Upload session files
-guideai upload /path/to/session.jsonl
+## What It Does
 
-# List recent sessions
-guideai sessions
+- **Login**: Opens browser for GitHub OAuth authentication
+- **Session Info**: Check your authentication status
+- **Logout**: Clear stored credentials
 
-# View session details
-guideai session <session-id>
-```
-
-## Features
-
-- **OAuth Authentication**: Secure GitHub OAuth flow
-- **Session Upload**: Upload AI agent session files for processing
-- **Session Management**: List and view session details
-- **Cross-platform**: Works on macOS, Windows, and Linux
-- **Shared Config**: Uses same configuration as desktop app
+Perfect for CI/CD pipelines, scripts, or terminal-focused workflows.
 
 ## Configuration
 
-Config file location: `~/.guideai/config.json`
+Shares config with desktop app: `~/.guideai/config.json`
 
-Example:
 ```json
 {
   "apiKey": "your-api-key",
   "serverUrl": "https://be.guideai.dev",
-  "username": "your-username",
-  "tenantId": "your-tenant-id",
-  "tenantName": "Your Team"
+  "username": "your-username"
 }
 ```
 
-## Development
+## For Developers
 
-This package is part of the GuideAI monorepo and is automatically synced to this repository.
-
-### Building
+### Build from Source
 
 ```bash
-# Build both ESM and CJS
+git clone https://github.com/guideai-dev/cli.git
+cd cli
+pnpm install
 pnpm build
-
-# Build ESM only
-pnpm build:esm
-
-# Build CJS only
-pnpm build:cjs
-
-# Development (watch mode)
-pnpm dev
-
-# Type checking
-pnpm typecheck
-
-# Run tests
-pnpm test
 ```
 
-### Contributing
+**See [CLAUDE.md](CLAUDE.md) for:**
+- Development setup
+- Architecture details
+- Adding new commands
 
-We welcome contributions! Please:
+### Tech Stack
 
-1. Fork this repository
-2. Create a feature branch
-3. Add features or fix bugs
-4. Submit a pull request
-
-**Note**: All pull requests are reviewed and manually backported to the private GuideAI monorepo.
-
-## Architecture
-
-- **Framework**: Commander.js for CLI parsing
-- **Language**: TypeScript with full type safety
-- **Styling**: Chalk for terminal colors
-- **Browser Integration**: Cross-platform URL opening for OAuth
-
-## Package Configuration
-
-**Binary**:
-```json
-{
-  "bin": {
-    "guideai": "./dist/esm/cli.js"
-  }
-}
-```
-
-**Dual Module Support**: Both ESM and CommonJS distributions included.
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## Links
-
-- [GuideAI Website](https://guideai.dev)
-- [Documentation](https://docs.guideai.dev)
-- [GitHub Organization](https://github.com/guideai-dev)
-- [npm Package](https://github.com/guideai-dev/cli/pkgs/npm/cli)
+- Commander.js for CLI parsing
+- Dual build (ESM + CommonJS)
+- TypeScript with full type safety
 
 ## Related Packages
 
-- [@guideai-dev/desktop](https://github.com/guideai-dev/desktop) - Desktop menubar application
-- [@guideai-dev/types](https://github.com/guideai-dev/types) - Shared TypeScript types
-- [@guideai-dev/session-processing](https://github.com/guideai-dev/session-processing) - Session processing and AI models
+- [@guideai-dev/desktop](https://github.com/guideai-dev/desktop) - Desktop app
+- [@guideai-dev/types](https://github.com/guideai-dev/types) - Shared types
+
+## License
+
+MIT License - see [LICENSE](LICENSE)
+
+## Support
+
+- 💬 [**Discussions**](https://github.com/orgs/guideai-dev/discussions) - Ask questions, share ideas
+- 🐛 [**Issues**](https://github.com/guideai-dev/desktop/issues) - Report bugs, request features
+- 📧 **Email**: support@guideai.dev
