@@ -13,7 +13,7 @@ const program = new Command()
 // Get package version
 const __dirname = dirname(fileURLToPath(import.meta.url))
 // Try both paths: ../package.json (when running from src) and ../../package.json (when running from dist)
-let packageJson
+let packageJson: { version: string }
 try {
 	packageJson = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf-8'))
 } catch {

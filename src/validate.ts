@@ -162,7 +162,7 @@ export async function validateCommand(
 	} else {
 		// Human-readable output
 		for (const { file, result } of results) {
-			console.log(chalk.gray('\n' + '─'.repeat(50)))
+			console.log(chalk.gray(`\n${'─'.repeat(50)}`))
 			console.log(chalk.bold(`File: ${file}`))
 			console.log(
 				generateValidationReport(result, {
@@ -173,7 +173,7 @@ export async function validateCommand(
 		}
 
 		// Summary
-		console.log(chalk.gray('\n' + '='.repeat(50)))
+		console.log(chalk.gray(`\n${'='.repeat(50)}`))
 		console.log(chalk.bold('Summary'))
 		console.log(chalk.gray('─'.repeat(50)))
 
@@ -239,8 +239,8 @@ export async function validateCommand(
  * Watch mode implementation
  */
 export async function validateWatch(
-	path: string,
-	options: ValidateOptions
+	_path: string,
+	_options: ValidateOptions
 ): Promise<void> {
 	console.log(chalk.cyan('Watch mode not yet implemented'))
 	console.log(chalk.gray('Use --help for available options'))
