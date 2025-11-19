@@ -52,7 +52,7 @@ Shares config with desktop app: `~/.guidemode/config.json`
 ### Build from Source
 
 ```bash
-git clone https://github.com/guidemode-dev/cli.git
+git clone https://github.com/guidemode/cli.git
 cd cli
 pnpm install
 pnpm build
@@ -71,8 +71,8 @@ pnpm build
 
 ## Related Packages
 
-- [@guidemode/desktop](https://github.com/guidemode-dev/desktop) - Desktop app
-- [@guidemode/types](https://github.com/guidemode-dev/types) - Shared types
+- [@guidemode/desktop](https://github.com/guidemode/desktop) - Desktop app
+- [@guidemode/types](https://github.com/guidemode/types) - Shared types
 
 ## License
 
@@ -80,6 +80,6 @@ MIT License - see [LICENSE](LICENSE)
 
 ## Support
 
-- 💬 [**Discussions**](https://github.com/orgs/guidemode-dev/discussions) - Ask questions, share ideas
-- 🐛 [**Issues**](https://github.com/guidemode-dev/desktop/issues) - Report bugs, request features
+- 💬 [**Discussions**](https://github.com/orgs/guidemode/discussions) - Ask questions, share ideas
+- 🐛 [**Issues**](https://github.com/guidemode/desktop/issues) - Report bugs, request features
 - 📧 **Email**: support@guidemode.dev
