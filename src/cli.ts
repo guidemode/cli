@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url'
 import chalk from 'chalk'
 import { Command } from 'commander'
 import { loginFlow, logoutFlow, whoAmI } from './auth.js'
+import { createDeployment } from './deploy.js'
+import { createIssue } from './issue.js'
 import { validateCommand, validateWatch } from './validate.js'
 
 const program = new Command()
@@ -76,6 +78,107 @@ program
       } else {
         await validateCommand(path, options)
       }
+    } catch (error) {
+      console.error(chalk.red('Error:'), error instanceof Error ? error.message : 'Unknown error')
+      process.exit(1)
+    }
+  })
+
+// Issue command
+program
+  .command('issue <title>')
+  .description('Create or update an issue in GuideMode')
+  .requiredOption('--type <type>', 'Issue type: feature, bug, chore, discovery, incident, other')
+  .requiredOption('--state <state>', 'Issue state: open, closed, in_progress')
+  .requiredOption('--project <key>', 'Project key (e.g., "owner/repo")')
+  .option('--external-id <id>', 'Unique external ID (auto-generated if omitted)')
+  .option('--body <text>', 'Issue description')
+  .option('--url <url>', 'Link to source issue')
+  .option('--labels <labels>', 'Comma-separated labels')
+  .option('--assignee <username>', 'Assignee username')
+  .option('--closed-at <timestamp>', 'ISO8601 timestamp when closed')
+  .option('--json', 'Output JSON response')
+  .action(async (title, options) => {
+    try {
+      // Validate type
+      const validTypes = ['feature', 'bug', 'chore', 'discovery', 'incident', 'other']
+      if (!validTypes.includes(options.type)) {
+        console.error(chalk.red(`✗ Invalid type: ${options.type}`))
+        console.error(chalk.gray(`  Valid types: ${validTypes.join(', ')}`))
+        process.exit(1)
+      }
+
+      // Validate state
+      const validStates = ['open', 'closed', 'in_progress']
+      if (!validStates.includes(options.state)) {
+        console.error(chalk.red(`✗ Invalid state: ${options.state}`))
+        console.error(chalk.gray(`  Valid states: ${validStates.join(', ')}`))
+        process.exit(1)
+      }
+
+      await createIssue({
+        title,
+        type: options.type,
+        state: options.state,
+        project: options.project,
+        externalId: options.externalId,
+        body: options.body,
+        url: options.url,
+        labels: options.labels,
+        assignee: options.assignee,
+        closedAt: options.closedAt,
+        json: options.json,
+      })
+    } catch (error) {
+      console.error(chalk.red('Error:'), error instanceof Error ? error.message : 'Unknown error')
+      process.exit(1)
+    }
+  })
+
+// Deploy command
+program
+  .command('deploy <ref> <sha>')
+  .description('Create or update a deployment in GuideMode')
+  .requiredOption('--env <environment>', 'Environment: production, staging, development, qa, preview, other')
+  .requiredOption('--status <status>', 'Deployment status: pending, queued, in_progress, success, failure, error')
+  .requiredOption('--project <key>', 'Project key (e.g., "owner/repo")')
+  .option('--external-id <id>', 'Unique external ID (auto-generated if omitted)')
+  .option('--description <text>', 'Deployment description')
+  .option('--url <url>', 'Deployment URL')
+  .option('--rollback', 'Flag this as a rollback deployment')
+  .option('--rollback-from <sha>', 'SHA being rolled back from')
+  .option('--json', 'Output JSON response')
+  .action(async (ref, sha, options) => {
+    try {
+      // Validate environment
+      const validEnvs = ['production', 'staging', 'development', 'qa', 'preview', 'other']
+      if (!validEnvs.includes(options.env)) {
+        console.error(chalk.red(`✗ Invalid environment: ${options.env}`))
+        console.error(chalk.gray(`  Valid environments: ${validEnvs.join(', ')}`))
+        process.exit(1)
+      }
+
+      // Validate status
+      const validStatuses = ['pending', 'queued', 'in_progress', 'success', 'failure', 'error', 'inactive']
+      if (!validStatuses.includes(options.status)) {
+        console.error(chalk.red(`✗ Invalid status: ${options.status}`))
+        console.error(chalk.gray(`  Valid statuses: ${validStatuses.join(', ')}`))
+        process.exit(1)
+      }
+
+      await createDeployment({
+        ref,
+        sha,
+        env: options.env,
+        status: options.status,
+        project: options.project,
+        externalId: options.externalId,
+        description: options.description,
+        url: options.url,
+        rollback: options.rollback,
+        rollbackFrom: options.rollbackFrom,
+        json: options.json,
+      })
     } catch (error) {
       console.error(chalk.red('Error:'), error instanceof Error ? error.message : 'Unknown error')
       process.exit(1)
