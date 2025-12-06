@@ -90,7 +90,7 @@ program
   .description('Create or update an issue in GuideMode')
   .requiredOption('--type <type>', 'Issue type: feature, bug, chore, discovery, incident, other')
   .requiredOption('--state <state>', 'Issue state: open, closed, in_progress')
-  .requiredOption('--project <key>', 'Project key (e.g., "owner/repo")')
+  .requiredOption('--repository <key>', 'Repository key (e.g., "owner/repo")')
   .option('--external-id <id>', 'Unique external ID (auto-generated if omitted)')
   .option('--body <text>', 'Issue description')
   .option('--url <url>', 'Link to source issue')
@@ -120,7 +120,7 @@ program
         title,
         type: options.type,
         state: options.state,
-        project: options.project,
+        repository: options.repository,
         externalId: options.externalId,
         body: options.body,
         url: options.url,
@@ -141,7 +141,7 @@ program
   .description('Create or update a deployment in GuideMode')
   .requiredOption('--env <environment>', 'Environment: production, staging, development, qa, preview, other')
   .requiredOption('--status <status>', 'Deployment status: pending, queued, in_progress, success, failure, error')
-  .requiredOption('--project <key>', 'Project key (e.g., "owner/repo")')
+  .requiredOption('--repository <key>', 'Repository key (e.g., "owner/repo")')
   .option('--external-id <id>', 'Unique external ID (auto-generated if omitted)')
   .option('--description <text>', 'Deployment description')
   .option('--url <url>', 'Deployment URL')
@@ -171,7 +171,7 @@ program
         sha,
         env: options.env,
         status: options.status,
-        project: options.project,
+        repository: options.repository,
         externalId: options.externalId,
         description: options.description,
         url: options.url,
