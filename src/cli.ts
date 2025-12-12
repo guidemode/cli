@@ -17,9 +17,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 // Try both paths: ../package.json (when running from src) and ../../package.json (when running from dist)
 let packageJson: { version: string }
 try {
-	packageJson = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf-8'))
+  packageJson = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf-8'))
 } catch {
-	packageJson = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf-8'))
+  packageJson = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf-8'))
 }
 
 program.name('guidemode').description('CLI for GuideMode').version(packageJson.version)
@@ -139,8 +139,14 @@ program
 program
   .command('deploy <ref> <sha>')
   .description('Create or update a deployment in GuideMode')
-  .requiredOption('--env <environment>', 'Environment: production, staging, development, qa, preview, other')
-  .requiredOption('--status <status>', 'Deployment status: pending, queued, in_progress, success, failure, error')
+  .requiredOption(
+    '--env <environment>',
+    'Environment: production, staging, development, qa, preview, other'
+  )
+  .requiredOption(
+    '--status <status>',
+    'Deployment status: pending, queued, in_progress, success, failure, error'
+  )
   .requiredOption('--repository <key>', 'Repository key (e.g., "owner/repo")')
   .option('--external-id <id>', 'Unique external ID (auto-generated if omitted)')
   .option('--description <text>', 'Deployment description')
@@ -159,7 +165,15 @@ program
       }
 
       // Validate status
-      const validStatuses = ['pending', 'queued', 'in_progress', 'success', 'failure', 'error', 'inactive']
+      const validStatuses = [
+        'pending',
+        'queued',
+        'in_progress',
+        'success',
+        'failure',
+        'error',
+        'inactive',
+      ]
       if (!validStatuses.includes(options.status)) {
         console.error(chalk.red(`✗ Invalid status: ${options.status}`))
         console.error(chalk.gray(`  Valid statuses: ${validStatuses.join(', ')}`))

@@ -74,7 +74,9 @@ export async function createIssue(options: IssueOptions): Promise<void> {
 
       if (response.status === 401) {
         console.error(chalk.red('✗ Authentication failed'))
-        console.log(chalk.gray('Your API key may have expired. Run "guidemode login" to re-authenticate'))
+        console.log(
+          chalk.gray('Your API key may have expired. Run "guidemode login" to re-authenticate')
+        )
         process.exit(1)
       }
 
