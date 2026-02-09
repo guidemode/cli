@@ -51,7 +51,7 @@ export async function createDeployment(options: DeployOptions): Promise<void> {
   const externalId = options.externalId || `manual-deploy-${crypto.randomUUID()}`
 
   const payload = {
-    repositoryKey: options.repository,
+    projectKey: options.repository,
     externalId,
     ref: options.ref,
     sha: options.sha,

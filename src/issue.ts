@@ -47,7 +47,7 @@ export async function createIssue(options: IssueOptions): Promise<void> {
   const labels = options.labels ? options.labels.split(',').map(l => l.trim()) : undefined
 
   const payload = {
-    repositoryKey: options.repository,
+    projectKey: options.repository,
     externalId,
     title: options.title,
     type: options.type,
