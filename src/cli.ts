@@ -6,8 +6,13 @@ import { fileURLToPath } from 'node:url'
 import chalk from 'chalk'
 import { Command } from 'commander'
 import { loginFlow, logoutFlow, whoAmI } from './auth.js'
+import { PREFIX } from './utils/brand.js'
 import { createDeployment } from './deploy.js'
 import { createIssue } from './issue.js'
+import { runLogs } from './logs.js'
+import { runSetup } from './setup.js'
+import { runStatus } from './status.js'
+import { runSync } from './sync.js'
 import { validateCommand, validateWatch } from './validate.js'
 
 const program = new Command()
@@ -22,7 +27,7 @@ try {
   packageJson = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf-8'))
 }
 
-program.name('guidemode').description('CLI for GuideMode').version(packageJson.version)
+program.name('guidemode').description(`${PREFIX} CLI for GuideMode`).version(packageJson.version)
 
 // Authentication commands
 program
@@ -192,6 +197,77 @@ program
         rollback: options.rollback,
         rollbackFrom: options.rollbackFrom,
         json: options.json,
+      })
+    } catch (error) {
+      console.error(chalk.red('Error:'), error instanceof Error ? error.message : 'Unknown error')
+      process.exit(1)
+    }
+  })
+
+// Setup command
+program
+  .command('setup')
+  .description('Configure GuideMode: login, install hooks, verify')
+  .option('--server <url>', 'Server URL', 'https://app.guidemode.dev')
+  .option('--force', 'Force re-authentication')
+  .action(async options => {
+    try {
+      await runSetup({ server: options.server, force: options.force })
+    } catch (error) {
+      console.error(chalk.red('Error:'), error instanceof Error ? error.message : 'Unknown error')
+      process.exit(1)
+    }
+  })
+
+// Sync command (used by hooks - always exits 0, never writes to stdout)
+program
+  .command('sync')
+  .description('Sync Claude Code session transcript to GuideMode')
+  .option('--session-id <id>', 'Session ID')
+  .option('--transcript-path <path>', 'Path to transcript file')
+  .option('--cwd <dir>', 'Working directory')
+  .option('--hook-event <event>', 'Hook event name')
+  .action(async options => {
+    try {
+      await runSync({
+        sessionId: options.sessionId,
+        transcriptPath: options.transcriptPath,
+        cwd: options.cwd,
+        hookEvent: options.hookEvent,
+      })
+    } catch {
+      // Sync must never fail visibly - errors are logged to file
+    }
+  })
+
+// Status command
+program
+  .command('status')
+  .description('Check GuideMode health and configuration')
+  .option('--verbose', 'Show detailed status')
+  .option('--json', 'Output JSON format')
+  .action(async options => {
+    try {
+      await runStatus({ verbose: options.verbose, json: options.json })
+    } catch (error) {
+      console.error(chalk.red('Error:'), error instanceof Error ? error.message : 'Unknown error')
+      process.exit(1)
+    }
+  })
+
+// Logs command
+program
+  .command('logs')
+  .description('View sync log file')
+  .option('--lines <n>', 'Number of lines to show', '30')
+  .option('--errors', 'Show only errors and warnings')
+  .option('--follow', 'Follow log file for new entries')
+  .action(async options => {
+    try {
+      await runLogs({
+        lines: Number.parseInt(options.lines, 10),
+        errors: options.errors,
+        follow: options.follow,
       })
     } catch (error) {
       console.error(chalk.red('Error:'), error instanceof Error ? error.message : 'Unknown error')

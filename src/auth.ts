@@ -3,15 +3,17 @@ import { URL } from 'node:url'
 import chalk from 'chalk'
 import open from 'open'
 import { clearConfig, loadConfig, updateConfig } from './config.js'
+import { PREFIX } from './utils/brand.js'
 
-const CALLBACK_PORT = 8765
+const PORT_RANGE_START = 8765
+const PORT_RANGE_END = 8770
 
 export async function loginFlow(serverUrl: string): Promise<void> {
-  console.log('▶ Starting authentication flow...')
+  console.log(`${PREFIX} Starting authentication flow...`)
 
   const _config = await loadConfig()
 
-  // Start local callback server
+  // Start local callback server (tries ports 8765-8770)
   const { server, callbackUrl } = await startCallbackServer()
 
   try {
@@ -20,7 +22,7 @@ export async function loginFlow(serverUrl: string): Promise<void> {
     console.log(chalk.gray(`Opening browser to: ${authUrl}`))
 
     await open(authUrl)
-    console.log(chalk.yellow('▶ Waiting for authentication in browser...'))
+    console.log(chalk.yellow(`${PREFIX} Waiting for authentication in browser...`))
 
     // Wait for callback with API key and tenant info
     const callbackData = await waitForCallback(server)
@@ -37,11 +39,13 @@ export async function loginFlow(serverUrl: string): Promise<void> {
       apiKey: callbackData.apiKey,
       serverUrl,
       username: userInfo.username,
+      name: userInfo.name,
+      avatarUrl: userInfo.avatarUrl,
       tenantId: callbackData.tenantId,
       tenantName: callbackData.tenantName,
     })
 
-    console.log(chalk.green('✓ Authentication successful!'))
+    console.log(`${PREFIX} ${chalk.green('✓ Authentication successful!')}`)
     console.log(chalk.gray(`Logged in as: ${userInfo.username}`))
     if (callbackData.tenantName) {
       console.log(chalk.gray(`Tenant: ${callbackData.tenantName}`))
@@ -62,31 +66,31 @@ export async function logoutFlow(): Promise<void> {
   const config = await loadConfig()
 
   if (!config.apiKey) {
-    console.log(chalk.yellow('▶ Not currently logged in'))
+    console.log(chalk.yellow(`${PREFIX} Not currently logged in`))
     return
   }
 
   await clearConfig()
-  console.log(chalk.green('✓ Logged out successfully'))
+  console.log(`${PREFIX} ${chalk.green('✓ Logged out successfully')}`)
 }
 
 export async function whoAmI(): Promise<void> {
   const config = await loadConfig()
 
   if (!config.apiKey || !config.username) {
-    console.log(chalk.yellow('▶ Not currently logged in'))
+    console.log(chalk.yellow(`${PREFIX} Not currently logged in`))
     console.log(chalk.gray('Run "guidemode login" to authenticate'))
     return
   }
 
   try {
     if (!config.serverUrl) {
-      console.log(chalk.red('✗ No server URL configured'))
+      console.log(chalk.red(`${PREFIX} ✗ No server URL configured`))
       console.log(chalk.gray('Run "guidemode login" to authenticate'))
       return
     }
     const userInfo = await getUserInfo(config.serverUrl, config.apiKey)
-    console.log(chalk.green(`Logged in as: ${userInfo.username}`))
+    console.log(`${PREFIX} ${chalk.green(`Logged in as: ${userInfo.username}`)}`)
     console.log(chalk.gray(`Server: ${config.serverUrl}`))
     console.log(chalk.gray(`API Key: ${config.apiKey.substring(0, 12)}...`))
   } catch (_error) {
@@ -95,7 +99,23 @@ export async function whoAmI(): Promise<void> {
   }
 }
 
+async function findAvailablePort(): Promise<number> {
+  for (let port = PORT_RANGE_START; port <= PORT_RANGE_END; port++) {
+    const available = await new Promise<boolean>(resolve => {
+      const testServer = createServer()
+      testServer.once('error', () => resolve(false))
+      testServer.listen(port, '127.0.0.1', () => {
+        testServer.close(() => resolve(true))
+      })
+    })
+    if (available) return port
+  }
+  throw new Error(`No available port in range ${PORT_RANGE_START}-${PORT_RANGE_END}`)
+}
+
 async function startCallbackServer(): Promise<{ server: Server; callbackUrl: string }> {
+  const port = await findAvailablePort()
+
   return new Promise((resolve, reject) => {
     const server = createServer((req, res) => {
       if (!req.url) {
@@ -103,7 +123,7 @@ async function startCallbackServer(): Promise<{ server: Server; callbackUrl: str
         res.end('Bad Request')
         return
       }
-      const url = new URL(req.url, `http://localhost:${CALLBACK_PORT}`)
+      const url = new URL(req.url, `http://127.0.0.1:${port}`)
 
       if (url.pathname === '/callback') {
         const apiKey = url.searchParams.get('key')
@@ -147,23 +167,15 @@ async function startCallbackServer(): Promise<{ server: Server; callbackUrl: str
       res.end('Not found')
     })
 
-    server.listen(CALLBACK_PORT, () => {
+    server.listen(port, '127.0.0.1', () => {
       resolve({
         server,
-        callbackUrl: `http://localhost:${CALLBACK_PORT}/callback`,
+        callbackUrl: `http://127.0.0.1:${port}/callback`,
       })
     })
 
     server.on('error', (err: NodeJS.ErrnoException) => {
-      if (err.code === 'EADDRINUSE') {
-        reject(
-          new Error(
-            `Port ${CALLBACK_PORT} is already in use. Please close any other applications using this port and try again.`
-          )
-        )
-      } else {
-        reject(err)
-      }
+      reject(err)
     })
   })
 }
@@ -194,7 +206,10 @@ async function waitForCallback(
   })
 }
 
-async function getUserInfo(serverUrl: string, apiKey: string): Promise<{ username: string }> {
+async function getUserInfo(
+  serverUrl: string,
+  apiKey: string
+): Promise<{ username: string; name: string; avatarUrl: string }> {
   const response = await fetch(`${serverUrl}/auth/session`, {
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -205,7 +220,10 @@ async function getUserInfo(serverUrl: string, apiKey: string): Promise<{ usernam
     throw new Error(`Failed to get user info: ${response.status} ${response.statusText}`)
   }
 
-  const data = (await response.json()) as { authenticated?: boolean; user?: { username: string } }
+  const data = (await response.json()) as {
+    authenticated?: boolean
+    user?: { username: string; name?: string; avatarUrl?: string }
+  }
 
   if (!data.authenticated || !data.user) {
     throw new Error('Invalid API key or user not found')
@@ -213,5 +231,7 @@ async function getUserInfo(serverUrl: string, apiKey: string): Promise<{ usernam
 
   return {
     username: data.user.username,
+    name: data.user.name || '',
+    avatarUrl: data.user.avatarUrl || '',
   }
 }

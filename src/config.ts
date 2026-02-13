@@ -6,12 +6,19 @@ export interface GuideModeConfig {
   apiKey?: string
   serverUrl?: string
   username?: string
+  name?: string
+  avatarUrl?: string
   tenantId?: string
   tenantName?: string
+  syncHooks?: string[]
 }
 
-const CONFIG_DIR = join(homedir(), '.guidemode')
-const CONFIG_FILE = join(CONFIG_DIR, 'config.json')
+export const DEFAULT_SYNC_HOOKS = ['Stop', 'PreCompact', 'SessionEnd']
+export const DEFAULT_SERVER_URL = 'https://app.guidemode.dev'
+export const CONFIG_DIR = join(homedir(), '.guidemode')
+export const CONFIG_FILE = join(CONFIG_DIR, 'config.json')
+export const LOG_DIR = join(CONFIG_DIR, 'logs')
+export const LOG_FILE = join(LOG_DIR, 'plugin-upload.log')
 
 export async function ensureConfigDir(): Promise<void> {
   try {
