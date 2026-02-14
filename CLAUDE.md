@@ -1,6 +1,6 @@
-# CLI - GuideMode Command Line Interface
+# guidemode CLI
 
-Commander.js-based CLI for interacting with the GuideMode server, featuring authentication and API integration.
+Published as `guidemode` on npm. Commander.js-based CLI for interacting with the GuideMode server.
 
 ## Architecture
 
@@ -111,8 +111,8 @@ When adding tests in the future:
 To check the CLI package from the workspace root:
 
 ```bash
-pnpm --filter @guidemode/cli lint
-pnpm --filter @guidemode/cli build
+pnpm --filter guidemode lint
+pnpm --filter guidemode build
 ```
 
 ## CLI Commands
@@ -123,7 +123,7 @@ pnpm --filter @guidemode/cli build
 ```bash
 guidemode login [--server <url>]
 ```
-- **Default Server**: `http://localhost:3000`
+- **Default Server**: `https://app.guidemode.dev`
 - **Flow**: Opens browser for OAuth authentication
 - **Storage**: Saves authentication token locally
 

@@ -1,85 +1,80 @@
-# @guidemode/cli
+# guidemode
 
-> **Command-line interface for GuideMode.**
+> **CLI for [GuideMode](https://guidemode.dev) — capture and analyze your Claude Code sessions.**
 
-A simple CLI for authenticating with GuideMode and managing sessions from your terminal.
-
-## Installation
+## Quick Start
 
 ```bash
-npm install -g @guidemode/cli
+npx guidemode
 ```
 
-## Usage
+This walks you through everything:
+1. Browser login (GitHub OAuth)
+2. Installing Claude Code sync hooks
+3. Optionally installing the CLI globally
 
-### Authentication
+Once set up, your Claude Code sessions sync automatically to GuideMode.
+
+## Install Globally (Optional)
 
 ```bash
-# Login to GuideMode
-guidemode login
-
-# Check who you're logged in as
-guidemode whoami
-
-# Logout
-guidemode logout
+npm install -g guidemode
 ```
 
-That's it! The CLI shares authentication with the desktop app, so you only need to login once.
+## Claude Code Plugin
 
-## What It Does
+For teams using Claude Code, install the plugin for automatic session sync:
 
-- **Login**: Opens browser for GitHub OAuth authentication
-- **Session Info**: Check your authentication status
-- **Logout**: Clear stored credentials
+```
+/plugin marketplace add guidemode/guidemode-marketplace
+/plugin install guidemode-sync@guidemode-marketplace
+```
 
-Perfect for CI/CD pipelines, scripts, or terminal-focused workflows.
+The plugin uses the same CLI under the hood — `npx guidemode` handles everything.
+
+## Commands
+
+```bash
+guidemode                  # First run: guided setup. After: show help
+guidemode setup            # Re-run setup (login + hooks)
+guidemode setup --force    # Force re-authentication
+guidemode login            # Login only
+guidemode logout           # Clear credentials
+guidemode whoami           # Show current user
+guidemode status           # Health check
+guidemode status --verbose # Detailed health check
+guidemode sync             # Sync current session (used by hooks)
+guidemode logs             # View sync logs
+guidemode logs --errors    # Show only errors
+guidemode logs --follow    # Tail logs in real-time
+```
 
 ## Configuration
 
-Shares config with desktop app: `~/.guidemode/config.json`
+Config lives at `~/.guidemode/config.json`:
 
 ```json
 {
-  "apiKey": "your-api-key",
+  "apiKey": "gm_...",
   "serverUrl": "https://app.guidemode.dev",
-  "username": "your-username"
+  "tenantId": "your-tenant-id",
+  "tenantName": "Your Team",
+  "syncHooks": ["Stop", "PreCompact", "SessionEnd"]
 }
 ```
 
+Omit `syncHooks` to enable all three (default).
+
 ## For Developers
 
-### Build from Source
-
 ```bash
-git clone https://github.com/guidemode/cli.git
-cd cli
-pnpm install
-pnpm build
+git clone https://github.com/guidemode/guidemode.git
+cd guidemode/packages/cli
+pnpm install && pnpm build
 ```
 
-**See [CLAUDE.md](CLAUDE.md) for:**
-- Development setup
-- Architecture details
-- Adding new commands
-
-### Tech Stack
-
-- Commander.js for CLI parsing
-- Dual build (ESM + CommonJS)
-- TypeScript with full type safety
-
-## Related Packages
-
-- [@guidemode/desktop](https://github.com/guidemode/desktop) - Desktop app
-- [@guidemode/types](https://github.com/guidemode/types) - Shared types
+See [CLAUDE.md](CLAUDE.md) for architecture and development details.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE)
-
-## Support
-
-- 💬 [**Discussions**](https://github.com/orgs/guidemode/discussions) - Ask questions, share ideas
-- 🐛 [**Issues**](https://github.com/guidemode/desktop/issues) - Report bugs, request features
-- 📧 **Email**: support@guidemode.dev
+MIT
