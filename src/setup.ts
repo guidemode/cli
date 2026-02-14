@@ -7,11 +7,12 @@ import { loginFlow } from './auth.js'
 import { runStatus } from './status.js'
 import { brandTitle } from './utils/brand.js'
 
+const GUIDEMODE_HOOK = { type: 'command', command: 'guidemode sync', timeout: 60 }
 const HOOKS_CONFIG = {
   hooks: {
-    Stop: [{ type: 'command', command: 'guidemode sync', timeout: 60 }],
-    PreCompact: [{ type: 'command', command: 'guidemode sync', timeout: 60 }],
-    SessionEnd: [{ type: 'command', command: 'guidemode sync', timeout: 60 }],
+    Stop: [{ hooks: [GUIDEMODE_HOOK] }],
+    PreCompact: [{ hooks: [GUIDEMODE_HOOK] }],
+    SessionEnd: [{ hooks: [GUIDEMODE_HOOK] }],
   },
 }
 
@@ -24,7 +25,7 @@ async function fileExists(path: string): Promise<boolean> {
   }
 }
 
-async function detectHooksTarget(): Promise<string> {
+export async function detectHooksTarget(): Promise<string> {
   // Check if .claude/ exists in cwd (local project)
   const localClaudeDir = join(process.cwd(), '.claude')
   if (await fileExists(localClaudeDir)) {
@@ -35,7 +36,21 @@ async function detectHooksTarget(): Promise<string> {
   return join(homedir(), '.claude', 'settings.local.json')
 }
 
-async function installHooks(targetPath: string): Promise<void> {
+function hasGuidemodeHook(
+  entry: Record<string, unknown>
+): boolean {
+  // New format: { hooks: [{ command: "guidemode sync" }] }
+  if (Array.isArray(entry.hooks)) {
+    return entry.hooks.some(
+      (h: Record<string, unknown>) =>
+        typeof h.command === 'string' && h.command.includes('guidemode sync')
+    )
+  }
+  // Old format: { command: "guidemode sync" }
+  return typeof entry.command === 'string' && entry.command.includes('guidemode sync')
+}
+
+export async function installHooks(targetPath: string): Promise<void> {
   const targetDir = join(targetPath, '..')
   await mkdir(targetDir, { recursive: true })
 
@@ -52,14 +67,19 @@ async function installHooks(targetPath: string): Promise<void> {
   const existingHooks = (settings.hooks || {}) as Record<string, unknown[]>
   const newHooks = { ...existingHooks }
 
-  for (const [event, hooks] of Object.entries(HOOKS_CONFIG.hooks)) {
-    const existing = (existingHooks[event] || []) as Array<{ command?: string }>
-    // Check if guidemode sync is already installed
-    const alreadyInstalled = existing.some(
-      h => h.command?.includes('guidemode sync')
-    )
+  for (const [event, newEntries] of Object.entries(HOOKS_CONFIG.hooks)) {
+    const existing = (existingHooks[event] || []) as Array<Record<string, unknown>>
+
+    // Remove any old-format guidemode entries
+    const filtered = existing.filter(entry => !hasGuidemodeHook(entry))
+
+    // Check if new-format guidemode hook is already present
+    const alreadyInstalled = filtered.some(entry => hasGuidemodeHook(entry))
+
     if (!alreadyInstalled) {
-      newHooks[event] = [...existing, ...hooks]
+      newHooks[event] = [...filtered, ...newEntries]
+    } else {
+      newHooks[event] = filtered
     }
   }
 

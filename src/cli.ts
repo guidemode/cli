@@ -1,16 +1,19 @@
 #!/usr/bin/env node
 
+import { execSync } from 'node:child_process'
+import { createInterface } from 'node:readline'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import chalk from 'chalk'
 import { Command } from 'commander'
 import { loginFlow, logoutFlow, whoAmI } from './auth.js'
+import { loadConfig } from './config.js'
 import { PREFIX } from './utils/brand.js'
 import { createDeployment } from './deploy.js'
 import { createIssue } from './issue.js'
 import { runLogs } from './logs.js'
-import { runSetup } from './setup.js'
+import { detectHooksTarget, installHooks, runSetup } from './setup.js'
 import { runStatus } from './status.js'
 import { runSync } from './sync.js'
 import { validateCommand, validateWatch } from './validate.js'
@@ -275,10 +278,92 @@ program
     }
   })
 
-// Show help if no arguments provided
-if (process.argv.length === 2) {
-  program.help()
+async function promptYesNo(question: string): Promise<boolean> {
+  const rl = createInterface({ input: process.stdin, output: process.stdout })
+  return new Promise(resolve => {
+    rl.question(question, answer => {
+      rl.close()
+      resolve(answer.trim().toLowerCase() !== 'n')
+    })
+  })
 }
 
-// Parse command line arguments
-program.parse()
+async function firstRunFlow(): Promise<void> {
+  const config = await loadConfig()
+  if (config.apiKey) {
+    // Already configured, show help
+    program.help()
+    return
+  }
+
+  // First run — guide the user through setup
+  console.log(chalk.bold(`\n${PREFIX} Welcome to GuideMode!\n`))
+  console.log(chalk.gray('It looks like this is your first time running GuideMode.'))
+  console.log(chalk.gray('Let\'s get you set up.\n'))
+
+  // Step 1: Login
+  console.log(chalk.bold('Step 1: Authentication\n'))
+  try {
+    await loginFlow('https://app.guidemode.dev')
+    console.log()
+  } catch (error) {
+    console.error(chalk.red('Error:'), error instanceof Error ? error.message : 'Unknown error')
+    process.exit(1)
+  }
+
+  // Step 2: Ask about hooks
+  const wantsHooks = await promptYesNo(
+    `${chalk.bold('Step 2:')} Install Claude Code sync hooks? (Y/n) `
+  )
+
+  if (wantsHooks) {
+    const targetPath = await detectHooksTarget()
+    console.log(chalk.gray(`  Target: ${targetPath}`))
+    try {
+      await installHooks(targetPath)
+      console.log(chalk.green('  Hooks installed for: Stop, PreCompact, SessionEnd\n'))
+    } catch (err) {
+      console.error(
+        chalk.red('  Failed to install hooks:'),
+        err instanceof Error ? err.message : String(err)
+      )
+      console.log(chalk.gray('  You can run "guidemode setup" later to install hooks.\n'))
+    }
+  } else {
+    console.log(chalk.gray('\n  Skipped. You can run "guidemode setup" later to install hooks.\n'))
+  }
+
+  // Step 3: Offer global install if running via npx
+  const isNpx = process.env.npm_command === 'exec' || process.argv[1]?.includes('_npx')
+  if (isNpx) {
+    const wantsGlobal = await promptYesNo(
+      `${chalk.bold('Step 3:')} Install guidemode globally (so you can use it without npx)? (Y/n) `
+    )
+    if (wantsGlobal) {
+      try {
+        console.log(chalk.gray('  Running: npm install -g guidemode'))
+        execSync('npm install -g guidemode', { stdio: 'inherit' })
+        console.log(chalk.green('  Installed globally. You can now use "guidemode" directly.\n'))
+      } catch {
+        console.log(chalk.yellow('  Global install failed. You can install manually later:'))
+        console.log(chalk.gray('  npm install -g guidemode\n'))
+      }
+    } else {
+      console.log(chalk.gray('\n  Skipped. You can install later: npm install -g guidemode\n'))
+    }
+  }
+
+  // Verify
+  console.log(chalk.bold('Verification\n'))
+  await runStatus({ verbose: true })
+}
+
+// If no subcommand provided, run first-run flow or show help
+if (process.argv.length === 2) {
+  firstRunFlow().catch(err => {
+    console.error(chalk.red('Error:'), err instanceof Error ? err.message : 'Unknown error')
+    process.exit(1)
+  })
+} else {
+  program.parse()
+}
