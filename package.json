@@ -39,8 +39,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@guidemode/types": "workspace:*",
-    "@guidemode/session-processing": "workspace:*",
+    "@guidemode/types": "^0.2.1",
+    "@guidemode/session-processing": "^0.2.1",
     "chalk": "^5.4.1",
     "commander": "^12.1.0",
     "open": "^10.2.0"
